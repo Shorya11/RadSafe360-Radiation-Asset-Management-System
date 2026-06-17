@@ -1,5 +1,8 @@
 import { Modal } from '../ui/Modal'
 import { GaugeStatusBadge } from './GaugeStatusBadge'
+import { LifecycleStatusBadge } from './LifecycleStatusBadge'
+import { Button } from '../ui/Button'
+import { Eye, Download } from 'lucide-react'
 
 function DetailRow({ label, value }) {
   return (
@@ -10,7 +13,7 @@ function DetailRow({ label, value }) {
   )
 }
 
-export function GaugeViewModal({ gauge, open, onClose }) {
+export function GaugeViewModal({ gauge, open, onClose, onPreviewDocument, onDownloadDocument }) {
   if (!gauge) return null
 
   return (
@@ -24,15 +27,53 @@ export function GaugeViewModal({ gauge, open, onClose }) {
         <DetailRow label="Model" value={gauge.model} />
         <DetailRow label="Source" value={gauge.source} />
         <DetailRow label="Quantity" value={gauge.quantity} />
-        <DetailRow label="Activity" value={gauge.activity} />
         <DetailRow label="Purchase Date" value={gauge.purchaseDate} />
-        <DetailRow label="Install Date" value={gauge.installDate} />
-        <DetailRow label="Life" value={gauge.life} />
+        <DetailRow label="Installation Date" value={gauge.installDate} />
+        <DetailRow label="Source Test Date" value={gauge.sourceTestDate} />
+        <DetailRow label="Activity" value={gauge.activity} />
+        <DetailRow label="Lifecycle (Years)" value={gauge.lifecycleYears} />
+        <DetailRow label="Expiry Date" value={gauge.expiryDate} />
+        <DetailRow label="Remaining Life" value={gauge.remainingLife} />
+        <DetailRow label="Lifecycle Status">
+          <LifecycleStatusBadge status={gauge.lifecycleStatus} />
+        </DetailRow>
         <DetailRow label="Plant" value={gauge.plant} />
         <DetailRow label="Location" value={gauge.location} />
         <DetailRow label="NOC Number" value={gauge.nocNumber} />
         <DetailRow label="Contact Person" value={gauge.contactPerson} />
         <DetailRow label="Calibration Due Date" value={gauge.calibrationDueDate} />
+      </div>
+      <div className="mt-6">
+        <h3 className="text-sm font-semibold text-gray-900">Uploaded Documents</h3>
+        {!gauge.documents?.length ? (
+          <p className="mt-2 text-sm text-industrial-600">No documents uploaded.</p>
+        ) : (
+          <div className="mt-3 space-y-2">
+            {gauge.documents.map((doc) => (
+              <div
+                key={doc.id}
+                className="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2"
+              >
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{doc.fileName}</p>
+                  <p className="text-xs text-industrial-600">
+                    Uploaded: {new Date(doc.uploadedAt).toLocaleDateString()}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="secondary" onClick={() => onPreviewDocument(doc)}>
+                    <Eye className="h-4 w-4" />
+                    View
+                  </Button>
+                  <Button variant="secondary" onClick={() => onDownloadDocument(doc)}>
+                    <Download className="h-4 w-4" />
+                    Download
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </Modal>
   )

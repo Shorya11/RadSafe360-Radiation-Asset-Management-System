@@ -1,40 +1,18 @@
-import { Download } from 'lucide-react'
-import { PageHeader } from '../components/ui/PageHeader'
-import { Button } from '../components/ui/Button'
 import { KpiGrid } from '../components/dashboard/KpiGrid'
-import { ChartPlaceholders } from '../components/dashboard/ChartPlaceholders'
-import { RecentMeetings } from '../components/dashboard/RecentMeetings'
-import { RecentActivity } from '../components/dashboard/RecentActivity'
+import { DashboardCharts } from '../components/dashboard/DashboardCharts'
+import { RsoCertifiedPersonnelCard } from '../components/dashboard/RsoCertifiedPersonnelCard'
 
 export function Dashboard() {
   return (
-    <div className="space-y-8">
-      <PageHeader
-        title="Operations Dashboard"
-        description="Monitor gauges, meetings, attendance, and risk metrics across your facility."
-        action={
-          <Button type="button">
-            <Download className="h-4 w-4" />
-            Export Report
-          </Button>
-        }
-      />
-
-      <section aria-label="Key performance indicators">
+    <div className="mx-auto flex max-w-[1600px] flex-col gap-10 lg:gap-12">
+      <section aria-label="Key performance indicators" className="space-y-5">
+        <h2 className="section-heading">Overview</h2>
         <KpiGrid />
       </section>
 
-      <section aria-label="Analytics charts" className="space-y-4">
+      <section aria-label="Analytics charts" className="min-h-0 flex-1 space-y-5">
         <h2 className="section-heading">Analytics</h2>
-        <ChartPlaceholders />
-      </section>
-
-      <section
-        aria-label="Meetings and activity"
-        className="grid gap-6 xl:grid-cols-2"
-      >
-        <RecentMeetings />
-        <RecentActivity />
+        <DashboardCharts />
       </section>
     </div>
   )

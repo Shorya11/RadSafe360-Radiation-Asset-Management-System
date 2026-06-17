@@ -7,6 +7,10 @@ import { formatMeetingDate } from '../../utils/meetingUtils'
 import { Button } from '../ui/Button'
 
 export function MeetingCard({ meeting }) {
+  const computedStatus =
+    new Date(meeting.date) < new Date()
+      ? 'completed'
+      : 'scheduled'
   return (
     <Card className="flex flex-col">
       <CardBody className="flex flex-1 flex-col gap-4">
@@ -42,8 +46,8 @@ export function MeetingCard({ meeting }) {
         </div>
 
         <div className="mt-auto flex items-center justify-between border-t border-slate-200 pt-4">
-          <Badge variant={meeting.status === 'completed' ? 'success' : 'default'}>
-            {meeting.status}
+          <Badge variant={computedStatus === 'completed' ? 'success' : 'default'}>
+            {computedStatus}
           </Badge>
           <Link to={`/meetings/${meeting.id}`}>
             <Button variant="secondary" className="!py-2 !text-xs">

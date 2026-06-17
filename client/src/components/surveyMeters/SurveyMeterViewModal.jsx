@@ -1,5 +1,7 @@
 import { Modal } from '../ui/Modal'
 import { SurveyMeterStatusBadge } from './SurveyMeterStatusBadge'
+import { Button } from '../ui/Button'
+import { Download, Eye } from 'lucide-react'
 
 function DetailRow({ label, value }) {
   return (
@@ -10,7 +12,13 @@ function DetailRow({ label, value }) {
   )
 }
 
-export function SurveyMeterViewModal({ meter, open, onClose }) {
+export function SurveyMeterViewModal({
+  meter,
+  open,
+  onClose,
+  onPreviewDocument,
+  onDownloadDocument,
+}) {
   if (!meter) return null
 
   return (
@@ -32,6 +40,38 @@ export function SurveyMeterViewModal({ meter, open, onClose }) {
         <DetailRow label="Calibration Date" value={meter.calibrationDate} />
         <DetailRow label="Calibration Till Date" value={meter.calibrationTillDate} />
         <DetailRow label="Calibration Lab" value={meter.calibrationLab} />
+      </div>
+      <div className="mt-6">
+        <h3 className="text-sm font-semibold text-gray-900">Uploaded Documents</h3>
+        {!meter.documents?.length ? (
+          <p className="mt-2 text-sm text-industrial-600">No documents uploaded.</p>
+        ) : (
+          <div className="mt-3 space-y-2">
+            {meter.documents.map((doc) => (
+              <div
+                key={doc.id}
+                className="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2"
+              >
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{doc.fileName}</p>
+                  <p className="text-xs text-industrial-600">
+                    Uploaded: {new Date(doc.uploadedAt).toLocaleDateString()}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="secondary" onClick={() => onPreviewDocument(doc)}>
+                    <Eye className="h-4 w-4" />
+                    View
+                  </Button>
+                  <Button variant="secondary" onClick={() => onDownloadDocument(doc)}>
+                    <Download className="h-4 w-4" />
+                    Download
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </Modal>
   )

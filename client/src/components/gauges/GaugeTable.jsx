@@ -1,14 +1,16 @@
 import { useMemo, useState } from 'react'
-import { Eye, Pencil, Trash2, Download, Search } from 'lucide-react'
+import { Eye, Pencil, Trash2, Download, Search, Upload } from 'lucide-react'
 import { useGauges } from '../../context/GaugeContext'
 import { GaugeStatusBadge } from './GaugeStatusBadge'
+import { LifecycleStatusBadge } from './LifecycleStatusBadge'
 import { GAUGE_PLANTS, GAUGE_STATUSES } from '../../data/gauges'
 
-export function GaugeTable({ onView, onEdit, onDelete, onDownload }) {
+export function GaugeTable({ onView, onEdit, onDelete, onDownload, onUpload }) {
   const { gauges } = useGauges()
   const [search, setSearch] = useState('')
   const [plantFilter, setPlantFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
+   const plantOptions = [...new Set(gauges.map((g) => g.plant).filter(Boolean))]
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -29,17 +31,20 @@ export function GaugeTable({ onView, onEdit, onDelete, onDownload }) {
     })
   }, [gauges, search, plantFilter, statusFilter])
 
+
+
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
         <div className="relative max-w-md flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-industrial-600" />
+          <Search className="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-industrial-600" />
           <input
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search gauge ID, serial, plant, location..."
-            className="enterprise-input w-full py-2.5 pl-10 pr-4"
+            placeholder="Search gauges..."
+            className="enterprise-input w-full py-2.5 !pl-14 pr-4"
           />
         </div>
         <select
@@ -48,7 +53,7 @@ export function GaugeTable({ onView, onEdit, onDelete, onDownload }) {
           className="enterprise-select"
         >
           <option value="all">All plants</option>
-          {GAUGE_PLANTS.map((p) => (
+          {plantOptions.map((p) => (
             <option key={p} value={p}>
               {p}
             </option>
@@ -73,7 +78,7 @@ export function GaugeTable({ onView, onEdit, onDelete, onDownload }) {
 
       <div className="glass-card overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1700px] text-left text-sm">
+          <table className="w-full min-w-[2200px] text-left text-sm">
             <thead className="sticky top-0 z-10">
               <tr className="enterprise-table-head-accent">
                 <th className="whitespace-nowrap px-4 py-3 font-semibold">Gauge ID</th>
@@ -82,10 +87,14 @@ export function GaugeTable({ onView, onEdit, onDelete, onDownload }) {
                 <th className="whitespace-nowrap px-4 py-3 font-semibold">Model</th>
                 <th className="whitespace-nowrap px-4 py-3 font-semibold">Source</th>
                 <th className="whitespace-nowrap px-4 py-3 font-semibold">Quantity</th>
+                <th className="whitespace-nowrap px-4 py-3 font-semibold">Installation Date</th>
+                <th className="whitespace-nowrap px-4 py-3 font-semibold">Source Test Date</th>
                 <th className="whitespace-nowrap px-4 py-3 font-semibold">Activity</th>
                 <th className="whitespace-nowrap px-4 py-3 font-semibold">Purchase Date</th>
-                <th className="whitespace-nowrap px-4 py-3 font-semibold">Install Date</th>
-                <th className="whitespace-nowrap px-4 py-3 font-semibold">Life</th>
+                <th className="whitespace-nowrap px-4 py-3 font-semibold">Lifecycle (Years)</th>
+                <th className="whitespace-nowrap px-4 py-3 font-semibold">Expiry Date</th>
+                <th className="whitespace-nowrap px-4 py-3 font-semibold">Remaining Life</th>
+                <th className="whitespace-nowrap px-4 py-3 font-semibold">Lifecycle Status</th>
                 <th className="whitespace-nowrap px-4 py-3 font-semibold">Location</th>
                 <th className="whitespace-nowrap px-4 py-3 font-semibold">Plant</th>
                 <th className="whitespace-nowrap px-4 py-3 font-semibold">Status</th>
@@ -100,7 +109,7 @@ export function GaugeTable({ onView, onEdit, onDelete, onDownload }) {
             <tbody className="divide-y divide-slate-200">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={18} className="px-4 py-12 text-center text-industrial-600">
+                  <td colSpan={23} className="px-4 py-12 text-center text-industrial-600">
                     No gauges match your filters.
                   </td>
                 </tr>
@@ -117,10 +126,16 @@ export function GaugeTable({ onView, onEdit, onDelete, onDownload }) {
                     <td className="whitespace-nowrap px-4 py-3 text-gray-700">{g.model}</td>
                     <td className="whitespace-nowrap px-4 py-3 text-gray-700">{g.source}</td>
                     <td className="whitespace-nowrap px-4 py-3 text-gray-700">{g.quantity}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-gray-500">{g.installDate || '—'}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-gray-500">{g.sourceTestDate}</td>
                     <td className="max-w-[140px] truncate px-4 py-3 text-gray-500">{g.activity}</td>
                     <td className="whitespace-nowrap px-4 py-3 text-gray-500">{g.purchaseDate}</td>
-                    <td className="whitespace-nowrap px-4 py-3 text-gray-500">{g.installDate || '—'}</td>
-                    <td className="whitespace-nowrap px-4 py-3 text-gray-500">{g.life}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-gray-500">{g.lifecycleYears}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-gray-500">{g.expiryDate || '—'}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-gray-500">{g.remainingLife || '—'}</td>
+                    <td className="whitespace-nowrap px-4 py-3">
+                      <LifecycleStatusBadge status={g.lifecycleStatus} />
+                    </td>
                     <td className="max-w-[140px] truncate px-4 py-3 text-gray-500">{g.location}</td>
                     <td className="whitespace-nowrap px-4 py-3 text-gray-700">{g.plant}</td>
                     <td className="whitespace-nowrap px-4 py-3">
@@ -136,6 +151,7 @@ export function GaugeTable({ onView, onEdit, onDelete, onDownload }) {
                         <ActionBtn icon={Eye} label="View" onClick={() => onView(g)} />
                         <ActionBtn icon={Pencil} label="Edit" onClick={() => onEdit(g)} />
                         <ActionBtn icon={Trash2} label="Delete" onClick={() => onDelete(g)} danger />
+                        <ActionBtn icon={Upload} label="Upload" onClick={() => onUpload(g)} />
                         <ActionBtn icon={Download} label="Download" onClick={() => onDownload(g)} />
                       </div>
                     </td>

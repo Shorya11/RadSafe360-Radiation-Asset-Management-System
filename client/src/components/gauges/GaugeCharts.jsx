@@ -22,9 +22,9 @@ const CHART_COLORS = [
   '#C62828',
 ]
 const STATUS_COLORS = {
-  Active: '#16a34a',
-  Inactive: '#64748b',
-  Disposed: '#C62828',
+  Valid: '#16a34a',
+  'Expiring Soon': '#D97706',
+  Expired: '#C62828',
 }
 
 const tooltipStyle = {
@@ -71,7 +71,7 @@ export function GaugeCharts() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Gauge Status Distribution</CardTitle>
+          <CardTitle>Gauge Lifecycle Distribution</CardTitle>
         </CardHeader>
         <CardBody className="h-72">
           <ResponsiveContainer width="100%" height="100%">

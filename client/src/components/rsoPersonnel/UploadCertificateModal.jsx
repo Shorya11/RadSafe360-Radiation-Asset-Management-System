@@ -29,10 +29,14 @@ export function UploadCertificateModal({ personnel, open, onClose, onSave }) {
           </Button>
           <Button
             type="button"
-            onClick={() => {
-              onSave(selectedName)
-              setSelectedName('')
-              onClose()
+            onClick={async () => {
+              try {
+                await onSave(selectedName)
+                setSelectedName('')
+                onClose()
+              } catch {
+                /* error surfaced via context */
+              }
             }}
           >
             Save Placeholder

@@ -38,7 +38,7 @@ export function RsoPersonnelTable({ onView, onEdit, onDelete, onUploadCertificat
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search employee, name, email, case file..."
-            className="enterprise-input w-full py-2.5 pl-10 pr-4"
+            className="enterprise-input w-full py-2.5 !pl-14 pr-4"
           />
         </div>
         <select

@@ -9,19 +9,54 @@ import { SurveyMeterFormModal } from '../components/surveyMeters/SurveyMeterForm
 import { DeleteSurveyMeterModal } from '../components/surveyMeters/DeleteSurveyMeterModal'
 import { useSurveyMeters } from '../context/SurveyMeterContext'
 import { exportSurveyMetersCsv } from '../utils/surveyMeterUtils'
+import { ApiStatus } from '../components/ui/ApiStatus'
+import { DocumentPreviewModal } from '../components/ui/DocumentPreviewModal'
+import { downloadDocument } from '../utils/fileUtils'
 
 export function SurveyMeterManagement() {
-  const { surveyMeters, addSurveyMeter, updateSurveyMeter, deleteSurveyMeter } = useSurveyMeters()
+  const {
+    surveyMeters,
+    loading,
+    error,
+    fetchSurveyMeters,
+    addSurveyMeter,
+    updateSurveyMeter,
+    deleteSurveyMeter,
+    uploadSurveyMeterDocument,
+  } = useSurveyMeters()
 
   const [viewMeter, setViewMeter] = useState(null)
   const [editMeter, setEditMeter] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [addOpen, setAddOpen] = useState(false)
+  const [previewDocument, setPreviewDocument] = useState(null)
+
+  const triggerFilePicker = (onSelect) => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.pdf,.png,.jpg,.jpeg,.gif,.webp'
+    input.onchange = () => {
+      const file = input.files?.[0]
+      if (file) onSelect(file)
+    }
+    input.click()
+  }
+
+  const handleUpload = (meter) => {
+    triggerFilePicker(async (file) => {
+      await uploadSurveyMeterDocument(meter.id, file)
+    })
+  }
+
+  const handleDownload = (meter) => {
+    const firstDocument = meter.documents?.[0]
+    if (firstDocument) downloadDocument(firstDocument)
+  }
 
   return (
     <div className="space-y-8">
       <PageHeader
-        title="Survey Meter Management"
+        title="Survey Meter"
         description="Track procurement, calibration, and operational status of radiation survey meters."
         action={
           <div className="flex flex-wrap gap-3">
@@ -37,19 +72,29 @@ export function SurveyMeterManagement() {
         }
       />
 
+      <ApiStatus loading={loading} error={error} onRetry={fetchSurveyMeters} />
+
       <section aria-label="Survey meter KPIs">
         <SurveyMeterKpiCards />
       </section>
 
       <section aria-label="Survey meter inventory">
         <h2 className="section-heading mb-4">Survey Meter Inventory</h2>
-        <SurveyMeterTable onView={setViewMeter} onEdit={setEditMeter} onDelete={setDeleteTarget} />
+        <SurveyMeterTable
+          onView={setViewMeter}
+          onEdit={setEditMeter}
+          onDelete={setDeleteTarget}
+          onUpload={handleUpload}
+          onDownload={handleDownload}
+        />
       </section>
 
       <SurveyMeterViewModal
         meter={viewMeter}
         open={Boolean(viewMeter)}
         onClose={() => setViewMeter(null)}
+        onPreviewDocument={setPreviewDocument}
+        onDownloadDocument={downloadDocument}
       />
 
       <SurveyMeterFormModal
@@ -72,6 +117,13 @@ export function SurveyMeterManagement() {
         open={Boolean(deleteTarget)}
         onClose={() => setDeleteTarget(null)}
         onConfirm={deleteSurveyMeter}
+      />
+
+      <DocumentPreviewModal
+        open={Boolean(previewDocument)}
+        onClose={() => setPreviewDocument(null)}
+        document={previewDocument}
+        title={previewDocument?.fileName}
       />
     </div>
   )

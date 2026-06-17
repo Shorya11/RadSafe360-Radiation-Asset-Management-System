@@ -5,30 +5,52 @@ export function computeGaugeKpis(gauges) {
   const active = gauges.filter((g) => g.status === 'Active').length
   const inactive = gauges.filter((g) => g.status === 'Inactive').length
   const disposed = gauges.filter((g) => g.status === 'Disposed').length
-  return { total, active, inactive, disposed }
+  const maintenance = gauges.filter((g) => g.status === 'Maintenance').length
+  return { total, active, inactive, disposed, maintenance }
 }
 
 export function buildPlantDistribution(gauges) {
-  const plants = ['SMS-II', 'SMS-III', 'Blast Furnace', 'Plate Mill', 'Coke Oven']
-  const counts = Object.fromEntries(plants.map((p) => [p, 0]))
+  const counts = {}
 
-  for (const g of gauges) {
-    if (counts[g.plant] !== undefined) counts[g.plant] += 1
-    else counts[g.plant] = 1
-  }
+  gauges.forEach((g) => {
+    if (!g.plant) return
 
-  return plants.map((plant) => ({
+    counts[g.plant] = (counts[g.plant] || 0) + 1
+  })
+
+  return Object.entries(counts).map(([plant, count]) => ({
     plant,
-    count: counts[plant] ?? 0,
+    count,
   }))
 }
 
 export function buildStatusDistribution(gauges) {
-  const statuses = ['Active', 'Inactive', 'Disposed']
-  return statuses.map((status) => ({
-    name: status,
-    value: gauges.filter((g) => g.status === status).length,
-  })).filter((d) => d.value > 0)
+  const distribution = {
+    Valid: 0,
+    'Expiring Soon': 0,
+    Expired: 0,
+  }
+
+  gauges.forEach((g) => {
+    const status = g.lifecycleStatus
+
+    if (distribution[status] !== undefined) {
+      distribution[status]++
+    }
+  })
+
+  return Object.entries(distribution)
+    .map(([name, value]) => ({
+      name,
+      value,
+    }))
+    .filter((item) => item.value > 0)
+}
+
+export function getLifecycleStatusVariant(status) {
+  if (status === 'Valid') return 'success'
+  if (status === 'Expiring Soon') return 'warning'
+  return 'danger'
 }
 
 export function exportGaugesCsv(gauges) {
@@ -41,10 +63,14 @@ export function exportGaugesCsv(gauges) {
     'Quantity',
     'Activity',
     'Purchase Date',
-    'Install Date',
+    'Installation Date',
+    'Source Test Date',
+    'Lifecycle (Years)',
+    'Expiry Date',
+    'Remaining Life',
+    'Lifecycle Status',
     'Location',
     'Plant',
-    'Life',
     'Status',
     'NOC Number',
     'Contact Person',
@@ -61,9 +87,13 @@ export function exportGaugesCsv(gauges) {
       g.activity,
       g.purchaseDate,
       g.installDate,
+      g.sourceTestDate,
+      g.lifecycleYears,
+      g.expiryDate,
+      g.remainingLife,
+      g.lifecycleStatus,
       g.location,
       g.plant,
-      g.life,
       g.status,
       g.nocNumber,
       g.contactPerson,

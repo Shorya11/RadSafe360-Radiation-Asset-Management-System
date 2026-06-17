@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, MapPin, Calendar, User, ClipboardList, Pencil, Save, X } from 'lucide-react'
 import { PageHeader } from '../components/ui/PageHeader'
 import { Badge } from '../components/ui/Badge'
@@ -14,10 +14,18 @@ import { ActionItemsTable } from '../components/meetings/ActionItemsTable'
 import { MeetingParticipantsPanel } from '../components/meetings/MeetingParticipantsPanel'
 import { useMeetings } from '../context/MeetingContext'
 import { formatMeetingDate } from '../utils/meetingUtils'
+import { ApiStatus } from '../components/ui/ApiStatus'
 
 export function MeetingDetails() {
   const { meetingId } = useParams()
+  const navigate = useNavigate()
   const {
+    loading,
+    detailsLoading,
+    error,
+    fetchMeetings,
+    loadMeetingDetails,
+    getMeetingById,
     getMeetingDetails,
     updateAttendanceStatus,
     removeParticipant,
@@ -39,9 +47,24 @@ export function MeetingDetails() {
     description: '',
   })
 
-  const details = getMeetingDetails(meetingId)
+  useEffect(() => {
+    if (meetingId) {
+      loadMeetingDetails(meetingId)
+    }
+  }, [meetingId, loadMeetingDetails])
 
-  if (!details) {
+  const details = meetingId ? getMeetingDetails(meetingId) : null
+  const meetingExists = meetingId ? Boolean(getMeetingById(meetingId)) : false
+
+  if (loading || (detailsLoading && !details)) {
+    return (
+      <div className="space-y-4 py-16">
+        <ApiStatus loading />
+      </div>
+    )
+  }
+
+  if (!details && !meetingExists && !detailsLoading) {
     return (
       <div className="py-16 text-center">
         <p className="text-gray-500">Meeting not found.</p>
@@ -52,7 +75,16 @@ export function MeetingDetails() {
     )
   }
 
+  if (!details) {
+    return (
+      <div className="space-y-4 py-16">
+        <ApiStatus loading={detailsLoading} error={error} onRetry={() => loadMeetingDetails(meetingId, { force: true })} />
+      </div>
+    )
+  }
+
   const { meeting, attendance, actionItems } = details
+  console.log("Meeting ID =", meeting?.id)
 
   const startEditDetails = () => {
     setDraftDetails({
@@ -70,17 +102,67 @@ export function MeetingDetails() {
     setIsEditingDetails(false)
   }
 
-  const saveEditDetails = () => {
-    updateMeeting(meeting.id, {
-      title: draftDetails.title,
-      date: draftDetails.date,
-      timeLabel: draftDetails.timeLabel,
-      venue: draftDetails.venue,
-      chairPerson: draftDetails.chairPerson,
-      description: draftDetails.description,
-    })
-    setIsEditingDetails(false)
+  const saveEditDetails = async () => {
+    try {
+      await updateMeeting(meeting.id, {
+        title: draftDetails.title,
+        date: draftDetails.date,
+        timeLabel: draftDetails.timeLabel,
+        venue: draftDetails.venue,
+        chairPerson: draftDetails.chairPerson,
+        description: draftDetails.description,
+      })
+      setIsEditingDetails(false)
+    } catch {
+      /* error surfaced via context */
+    }
   }
+  const sendMom = async (id) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/meetings/${id}/send-mom`,
+        {
+          method: 'POST',
+        }
+      )
+
+      const data = await response.json()
+
+      alert(data.message)
+    } catch (error) {
+      console.error(error)
+      alert('Failed to send MOM')
+    }
+  }
+  const handleDeleteMeeting = async () => {
+    const confirmed = window.confirm(
+      'Are you sure you want to delete this meeting?'
+    )
+
+    if (!confirmed) return
+
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/meetings/${meetingId}`,
+        {
+          method: 'DELETE',
+        }
+      )
+
+      const data = await response.json()
+
+      await fetchMeetings()
+
+      navigate('/meetings', { replace: true })
+
+      alert(data.message)
+    } catch (error) {
+      console.error(error)
+      alert('Failed to delete meeting')
+    }
+  }
+
+
 
   return (
     <div className="space-y-8">
@@ -92,17 +174,45 @@ export function MeetingDetails() {
         Back to Meetings
       </Link>
 
+      <ApiStatus
+        error={error}
+        onRetry={() => {
+          fetchMeetings()
+          loadMeetingDetails(meetingId, { force: true })
+        }}
+      />
+
       <PageHeader
         title={meeting.title}
         description={meeting.description}
         action={
           <div className="flex items-center gap-2">
             <Badge variant={meeting.status === 'completed' ? 'success' : 'default'}>{meeting.status}</Badge>
+            <Button
+              variant="secondary"
+              className="!py-1.5 !text-xs"
+              onClick={() => sendMom(meeting.id)}
+            >
+              📧 Email MOM
+            </Button>
             {!isEditingDetails ? (
-              <Button variant="secondary" className="!py-1.5 !text-xs" onClick={startEditDetails}>
-                <Pencil className="h-3.5 w-3.5" />
-                Edit
-              </Button>
+              <>
+                <Button
+                  variant="secondary"
+                  className="!py-1.5 !text-xs"
+                  onClick={startEditDetails}
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                  Edit
+                </Button>
+
+                <Button
+                  className="!py-1.5 !text-xs"
+                  onClick={handleDeleteMeeting}
+                >
+                  Delete
+                </Button>
+              </>
             ) : (
               <>
                 <Button variant="secondary" className="!py-1.5 !text-xs" onClick={cancelEditDetails}>
@@ -281,3 +391,4 @@ export function MeetingDetails() {
     </div>
   )
 }
+

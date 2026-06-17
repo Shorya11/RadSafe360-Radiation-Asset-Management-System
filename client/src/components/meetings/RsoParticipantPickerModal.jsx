@@ -12,11 +12,13 @@ export function RsoParticipantPickerModal({
 }) {
   const [search, setSearch] = useState('')
   const [localSelected, setLocalSelected] = useState([])
+  console.log("RSO Personnel received:", personnel)
+console.log("Count:", personnel?.length)
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
     return personnel.filter((p) => {
-      if (p.status !== 'Valid') return false
+      //if (p.status !== 'Valid') return false
       if (!q) return true
       return (
         p.employeeId.toLowerCase().includes(q) ||

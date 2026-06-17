@@ -1,0 +1,248 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ==========================================
+// ENUMS FOR STATUSES
+// ==========================================
+
+enum AttendanceStatus {
+  Present
+  Absent
+  Leave
+  Resigned
+}
+
+enum GaugeStatus {
+  Active
+  Inactive
+  Disposed
+  Maintenance
+}
+
+enum SurveyMeterStatus {
+  Working
+  Not_Working
+}
+
+enum RsoStatus {
+  Valid
+  Expired
+}
+
+enum MeetingActionStatus {
+  Pending
+  In_Progress
+  Completed
+}
+
+// ==========================================
+// MODELS
+// ==========================================
+
+model Gauge {
+  id                 String      @id
+  serialNumber       String      @unique
+  make               String
+  model              String
+  source             String
+  quantity           Int         @default(1)
+  activity           String
+  purchaseDate       String
+  installDate        String?
+  sourceTestDate     String
+  lifecycleYears     String      @map("life")
+  location           String
+  plant              String
+  nocNumber          String
+  contactPerson      String
+  calibrationDueDate String
+  status             GaugeStatus @default(Active)
+  documents          GaugeDocument[]
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+}
+
+model SurveyMeter {
+  id                  String            @id
+  surveyMeterName     String
+  supplier            String
+  dateOfProcurement   String
+  make                String
+  model               String
+  serialNumber        String            @unique
+  detectorType        String
+  detectorVolume      String
+  radiationType       String
+  functionalStatus    SurveyMeterStatus @default(Working)
+  calibrationDate     String
+  calibrationTillDate String
+  calibrationLab      String
+  documents           SurveyMeterDocument[]
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+}
+
+model GaugeDocument {
+  id           String   @id @default(cuid())
+  gaugeId      String
+  fileName     String
+  fileMimeType String
+  fileDataUrl  String
+  uploadedAt   DateTime @default(now())
+  gauge        Gauge    @relation(fields: [gaugeId], references: [id], onDelete: Cascade)
+
+  @@index([gaugeId])
+}
+
+model SurveyMeterDocument {
+  id           String      @id @default(cuid())
+  surveyMeterId String
+  fileName     String
+  fileMimeType String
+  fileDataUrl  String
+  uploadedAt   DateTime    @default(now())
+  surveyMeter  SurveyMeter @relation(fields: [surveyMeterId], references: [id], onDelete: Cascade)
+
+  @@index([surveyMeterId])
+}
+
+model EloraMember {
+  id          String   @id @default(cuid())
+  name        String
+  designation String
+  email       String   @unique
+  role        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model RsoPersonnel {
+  employeeId      String               @id
+  name            String
+  department      String
+  phone           String
+  email           String               @unique
+  caseFileNumber  String
+  documentNumber  String
+  dateOfIssue     String
+  validTill       String
+  status          RsoStatus            @default(Valid)
+  certificateName String?
+  participants    MeetingParticipant[]
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+}
+
+model Meeting {
+  id               String               @id
+  title            String
+  venue            String
+  date             String
+  timeLabel        String?
+  chairPerson      String
+  description      String?
+  status           String               @default("scheduled") // scheduled, completed, cancelled
+  topics           MeetingTopic[]
+  discussionPoints DiscussionPoint[]
+  participants     MeetingParticipant[]
+  actionItems      ActionItem[]
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+}
+
+model MeetingTopic {
+  id        String   @id @default(cuid())
+  meetingId String
+  topic     String
+  meeting   Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([meetingId])
+}
+
+model DiscussionPoint {
+  id        String   @id @default(cuid())
+  meetingId String
+  point     String
+  meeting   Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([meetingId])
+}
+
+model MeetingParticipant {
+  id                String        @id @default(cuid())
+  meetingId         String
+  personnelId       String?
+  participantSource String        @default("external") // rso_personnel, external
+  name              String
+  department        String
+  designation       String
+  phoneNumber       String
+  email             String
+  group             String        @default("certified_rso") // core, certified_rso
+  meeting           Meeting       @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  personnel         RsoPersonnel? @relation(fields: [personnelId], references: [employeeId], onDelete: SetNull)
+  attendance        Attendance?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([meetingId])
+  @@index([personnelId])
+}
+
+model Attendance {
+  id            String             @id @default(cuid())
+  participantId String             @unique
+  status        AttendanceStatus   @default(Present)
+  participant   MeetingParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+}
+
+model ActionItem {
+  id          String              @id @default(cuid())
+  meetingId   String
+  serialNo    Int
+  task        String
+  assignedTo  String
+  dueDate     String
+  status      MeetingActionStatus @default(Pending)
+  meeting     Meeting             @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@index([meetingId])
+}
+
+model Report {
+  id           String   @id @default(cuid())
+  department   String
+  contactName  String
+  reportType   String
+  fileName     String?
+  filePath     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model TrainingManual {
+  id          String   @id @default(cuid())
+  manualName  String
+  category    String
+  fileName    String?
+  filePath    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

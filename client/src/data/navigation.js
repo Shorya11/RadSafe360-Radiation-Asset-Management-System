@@ -12,8 +12,8 @@ import {
 
 export const NAV_ITEMS = [
   { label: 'Dashboard', path: '/', icon: LayoutDashboard },
-  { label: 'Gauge Management', path: '/gauges', icon: Gauge },
-  { label: 'Survey Meter Management', path: '/survey-meters', icon: Radio },
+  { label: 'Nucleonic Gauges', path: '/gauges', icon: Gauge },
+  { label: 'Survey Meter', path: '/survey-meters', icon: Radio },
   { label: 'RSO Personnel', path: '/rso-personnel', icon: Users },
   { label: 'Meeting Management', path: '/meetings', icon: CalendarDays },
   { label: 'Attendance', path: '/attendance', icon: ClipboardCheck },
@@ -22,6 +22,7 @@ export const NAV_ITEMS = [
   { label: 'ELORA Information', path: '/elora-information', icon: ShieldCheck },
 ]
 
-export const ROUTE_TITLES = Object.fromEntries(
-  NAV_ITEMS.map(({ path, label }) => [path, label]),
-)
+export const ROUTE_TITLES = {
+  ...Object.fromEntries(NAV_ITEMS.map(({ path, label }) => [path, label])),
+  '/': 'Radiation Safety Dashboard',
+}

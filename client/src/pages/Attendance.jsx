@@ -10,10 +10,21 @@ import { MeetingTopicsCard } from '../components/meetings/MeetingTopicsCard'
 import { AttendanceRateBadge } from '../components/meetings/AttendanceRateBadge'
 import { useMeetings } from '../context/MeetingContext'
 import { formatMeetingDate } from '../utils/meetingUtils'
+import { ApiStatus } from '../components/ui/ApiStatus'
 import clsx from 'clsx'
 
 export function Attendance() {
-  const { meetings, getMeetingDetails, updateAttendanceStatus, removeParticipant } = useMeetings()
+  const {
+    meetings,
+    loading,
+    error,
+    fetchMeetings,
+    detailsLoading,
+    loadMeetingDetails,
+    getMeetingDetails,
+    updateAttendanceStatus,
+    removeParticipant,
+  } = useMeetings()
   const sortedMeetings = useMemo(
     () => [...meetings].sort((a, b) => b.date.localeCompare(a.date)),
     [meetings],
@@ -27,6 +38,12 @@ export function Attendance() {
       setSelectedMeetingId(sortedMeetings[0].id)
     }
   }, [sortedMeetings, selectedMeetingId])
+
+  useEffect(() => {
+    if (selectedMeetingId) {
+      loadMeetingDetails(selectedMeetingId)
+    }
+  }, [selectedMeetingId, loadMeetingDetails])
 
   const details = selectedMeetingId ? getMeetingDetails(selectedMeetingId) : null
   const meeting = details?.meeting
@@ -44,6 +61,8 @@ export function Attendance() {
         title="Attendance Management"
         description="Add or remove participants, mark attendance, and review meeting topics."
       />
+
+      <ApiStatus loading={loading} error={error} onRetry={fetchMeetings} />
 
       <div className="grid gap-6 lg:grid-cols-4">
         <Card className="lg:col-span-1">

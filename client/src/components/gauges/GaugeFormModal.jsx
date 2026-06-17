@@ -14,9 +14,10 @@ const emptyForm = {
   activity: '',
   purchaseDate: '',
   installDate: '',
+  sourceTestDate: '',
   location: '',
   plant: 'SMS-II',
-  life: '',
+  lifecycleYears: '',
   nocNumber: '',
   contactPerson: '',
   calibrationDueDate: '',
@@ -39,9 +40,10 @@ export function GaugeFormModal({ open, onClose, gauge, onSave, title }) {
         activity: gauge.activity,
         purchaseDate: gauge.purchaseDate,
         installDate: gauge.installDate,
+        sourceTestDate: gauge.sourceTestDate,
         location: gauge.location,
         plant: gauge.plant,
-        life: gauge.life,
+        lifecycleYears: gauge.lifecycleYears,
         nocNumber: gauge.nocNumber,
         contactPerson: gauge.contactPerson,
         calibrationDueDate: gauge.calibrationDueDate,
@@ -57,10 +59,19 @@ export function GaugeFormModal({ open, onClose, gauge, onSave, title }) {
     setForm((f) => ({ ...f, [name]: value }))
   }
 
-  const handleSubmit = (e) => {
+  const [submitting, setSubmitting] = useState(false)
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    onSave(form)
-    onClose()
+    setSubmitting(true)
+    try {
+      await onSave(form)
+      onClose()
+    } catch {
+      /* error surfaced via context */
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -96,17 +107,17 @@ export function GaugeFormModal({ open, onClose, gauge, onSave, title }) {
             required
           />
           <Input
-            label="Activity"
-            name="activity"
-            value={form.activity}
-            onChange={handleChange}
-            required
-          />
-          <Input
             label="Purchase Date"
             name="purchaseDate"
             type="date"
             value={form.purchaseDate}
+            onChange={handleChange}
+            required
+          />
+          <Input
+            label="Activity"
+            name="activity"
+            value={form.activity}
             onChange={handleChange}
             required
           />
@@ -118,25 +129,32 @@ export function GaugeFormModal({ open, onClose, gauge, onSave, title }) {
             onChange={handleChange}
             required
           />
-          <Input label="Life" name="life" value={form.life} onChange={handleChange} required />
-          <div className="space-y-1.5">
-            <label htmlFor="plant" className="block text-xs font-medium text-gray-500">
-              Plant
-            </label>
-            <select
-              id="plant"
-              name="plant"
-              value={form.plant}
-              onChange={handleChange}
-              className="enterprise-input"
-            >
-              {GAUGE_PLANTS.map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Input
+            label="Source Test Date"
+            name="sourceTestDate"
+            type="date"
+            value={form.sourceTestDate}
+            onChange={handleChange}
+            required
+          />
+          <Input
+            label="Lifecycle (Years)"
+            name="lifecycleYears"
+            type="number"
+            min="0"
+            step="any"
+            value={form.lifecycleYears}
+            onChange={handleChange}
+            required
+          />
+          <Input
+            label="Plant"
+            name="plant"
+            value={form.plant}
+            onChange={handleChange}
+            placeholder="Enter Plant"
+            required
+          />
           <div className="space-y-1.5">
             <label htmlFor="status" className="block text-xs font-medium text-gray-500">
               Status
@@ -189,7 +207,9 @@ export function GaugeFormModal({ open, onClose, gauge, onSave, title }) {
           <Button type="button" variant="secondary" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit">{gauge ? 'Save Changes' : 'Add Gauge'}</Button>
+          <Button type="submit" disabled={submitting}>
+            {submitting ? 'Saving…' : gauge ? 'Save Changes' : 'Add Gauge'}
+          </Button>
         </div>
       </form>
     </Modal>

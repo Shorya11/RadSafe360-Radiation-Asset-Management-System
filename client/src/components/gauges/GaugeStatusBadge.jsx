@@ -4,6 +4,7 @@ const STATUS_VARIANT = {
   Active: 'success',
   Inactive: 'muted',
   Disposed: 'danger',
+  Maintenance: 'warning',
 }
 
 export function GaugeStatusBadge({ status }) {

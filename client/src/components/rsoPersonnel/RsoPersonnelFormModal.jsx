@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Modal } from '../ui/Modal'
 import { Input } from '../ui/Input'
 import { Button } from '../ui/Button'
-import { PERSONNEL_DEPARTMENTS } from '../../data/rsoPersonnel'
+
 
 const emptyForm = {
   employeeId: '',
@@ -50,10 +50,19 @@ export function RsoPersonnelFormModal({ open, onClose, personnel, onSave, title 
     setForm((prev) => ({ ...prev, certificateName: file?.name || prev.certificateName }))
   }
 
-  const handleSubmit = (e) => {
+  const [submitting, setSubmitting] = useState(false)
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    onSave(form)
-    onClose()
+    setSubmitting(true)
+    try {
+      await onSave(form)
+      onClose()
+    } catch {
+      /* error surfaced via context */
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -70,24 +79,14 @@ export function RsoPersonnelFormModal({ open, onClose, personnel, onSave, title 
             required={!personnel}
           />
           <Input label="Name" name="name" value={form.name} onChange={handleChange} required />
-          <div className="space-y-1.5">
-            <label htmlFor="department" className="block text-xs font-medium text-gray-500">
-              Department
-            </label>
-            <select
-              id="department"
-              name="department"
-              value={form.department}
-              onChange={handleChange}
-              className="enterprise-input"
-            >
-              {PERSONNEL_DEPARTMENTS.map((department) => (
-                <option key={department} value={department}>
-                  {department}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Input
+            label="Department"
+            name="department"
+            value={form.department}
+            onChange={handleChange}
+            placeholder="Enter Department"
+            required
+          />
           <Input label="Phone" name="phone" value={form.phone} onChange={handleChange} required />
           <Input label="Email" name="email" type="email" value={form.email} onChange={handleChange} required />
           <Input
@@ -139,7 +138,9 @@ export function RsoPersonnelFormModal({ open, onClose, personnel, onSave, title 
           <Button type="button" variant="secondary" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit">{personnel ? 'Save Changes' : 'Add Personnel'}</Button>
+          <Button type="submit" disabled={submitting}>
+            {submitting ? 'Saving…' : personnel ? 'Save Changes' : 'Add Personnel'}
+          </Button>
         </div>
       </form>
     </Modal>

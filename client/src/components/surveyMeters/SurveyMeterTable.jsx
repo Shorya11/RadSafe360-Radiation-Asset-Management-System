@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react'
-import { Eye, Pencil, Trash2, Search } from 'lucide-react'
+import { Eye, Pencil, Trash2, Search, Upload, Download } from 'lucide-react'
 import { useSurveyMeters } from '../../context/SurveyMeterContext'
 import { SURVEY_METER_STATUSES } from '../../data/surveyMeters'
 import { SurveyMeterStatusBadge } from './SurveyMeterStatusBadge'
 
-export function SurveyMeterTable({ onView, onEdit, onDelete }) {
+export function SurveyMeterTable({ onView, onEdit, onDelete, onUpload, onDownload }) {
   const { surveyMeters } = useSurveyMeters()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
@@ -37,7 +37,7 @@ export function SurveyMeterTable({ onView, onEdit, onDelete }) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search meter, serial, supplier, model..."
-            className="enterprise-input w-full py-2.5 pl-10 pr-4"
+            className="enterprise-input w-full py-2.5 !pl-14 pr-4"
           />
         </div>
         <select
@@ -120,6 +120,8 @@ export function SurveyMeterTable({ onView, onEdit, onDelete }) {
                         <ActionBtn icon={Eye} label="View" onClick={() => onView(m)} />
                         <ActionBtn icon={Pencil} label="Edit" onClick={() => onEdit(m)} />
                         <ActionBtn icon={Trash2} label="Delete" onClick={() => onDelete(m)} danger />
+                        <ActionBtn icon={Upload} label="Upload" onClick={() => onUpload(m)} />
+                        <ActionBtn icon={Download} label="Download" onClick={() => onDownload(m)} />
                       </div>
                     </td>
                   </tr>

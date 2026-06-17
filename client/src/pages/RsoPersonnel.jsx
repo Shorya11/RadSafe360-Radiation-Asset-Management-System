@@ -10,10 +10,14 @@ import { DeleteRsoPersonnelModal } from '../components/rsoPersonnel/DeleteRsoPer
 import { UploadCertificateModal } from '../components/rsoPersonnel/UploadCertificateModal'
 import { useRsoPersonnel } from '../context/RsoPersonnelContext'
 import { exportRsoPersonnelCsv } from '../utils/rsoPersonnelUtils'
+import { ApiStatus } from '../components/ui/ApiStatus'
 
 export function RsoPersonnel() {
   const {
     personnel,
+    loading,
+    error,
+    fetchPersonnel,
     addPersonnel,
     updatePersonnel,
     deletePersonnel,
@@ -44,6 +48,8 @@ export function RsoPersonnel() {
           </div>
         }
       />
+
+      <ApiStatus loading={loading} error={error} onRetry={fetchPersonnel} />
 
       <section aria-label="RSO personnel KPIs">
         <RsoPersonnelKpiCards />

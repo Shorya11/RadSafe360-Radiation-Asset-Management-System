@@ -10,16 +10,44 @@ import { GaugeFormModal } from '../components/gauges/GaugeFormModal'
 import { DeleteGaugeModal } from '../components/gauges/DeleteGaugeModal'
 import { useGauges } from '../context/GaugeContext'
 import { exportGaugesCsv } from '../utils/gaugeUtils'
+import { ApiStatus } from '../components/ui/ApiStatus'
+import { DocumentPreviewModal } from '../components/ui/DocumentPreviewModal'
+import { downloadDocument } from '../utils/fileUtils'
 
 export function Gauges() {
-  const { gauges, addGauge, updateGauge, deleteGauge } = useGauges()
+  const { gauges, loading, error, fetchGauges, addGauge, updateGauge, deleteGauge, uploadGaugeDocument } =
+    useGauges()
 
   const [viewGauge, setViewGauge] = useState(null)
   const [editGauge, setEditGauge] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [addOpen, setAddOpen] = useState(false)
+  const [previewDocument, setPreviewDocument] = useState(null)
+
+  const triggerFilePicker = (onSelect) => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.pdf,.png,.jpg,.jpeg,.gif,.webp'
+    input.onchange = () => {
+      const file = input.files?.[0]
+      if (file) onSelect(file)
+    }
+    input.click()
+  }
+
+  const handleUpload = (gauge) => {
+    triggerFilePicker(async (file) => {
+      await uploadGaugeDocument(gauge.id, file)
+    })
+  }
 
   const handleDownload = (gauge) => {
+    const firstDocument = gauge.documents?.[0]
+    if (firstDocument) {
+      downloadDocument(firstDocument)
+      return
+    }
+
     const text = [
       `Gauge Report: ${gauge.id}`,
       `Serial: ${gauge.serialNumber}`,
@@ -28,10 +56,14 @@ export function Gauges() {
       `Quantity: ${gauge.quantity}`,
       `Activity: ${gauge.activity}`,
       `Purchase Date: ${gauge.purchaseDate}`,
-      `Install Date: ${gauge.installDate || '-'}`,
+      `Installation Date: ${gauge.installDate || '-'}`,
+      `Source Test Date: ${gauge.sourceTestDate || '-'}`,
+      `Lifecycle (Years): ${gauge.lifecycleYears || '-'}`,
+      `Expiry Date: ${gauge.expiryDate || '-'}`,
+      `Remaining Life: ${gauge.remainingLife || '-'}`,
+      `Lifecycle Status: ${gauge.lifecycleStatus || '-'}`,
       `Location: ${gauge.location}`,
       `Plant: ${gauge.plant}`,
-      `Life: ${gauge.life}`,
       `Status: ${gauge.status}`,
       `NOC: ${gauge.nocNumber}`,
       `Contact: ${gauge.contactPerson}`,
@@ -49,7 +81,7 @@ export function Gauges() {
   return (
     <div className="space-y-8">
       <PageHeader
-        title="Gauge Management"
+        title=" Nucleonic Gauge"
         description="Track and monitor industrial nucleonic gauges across plants and facilities."
         action={
           <div className="flex flex-wrap gap-3">
@@ -64,6 +96,8 @@ export function Gauges() {
           </div>
         }
       />
+
+      <ApiStatus loading={loading} error={error} onRetry={fetchGauges} />
 
       {/* Section 2 — KPI Cards */}
       <section aria-label="Gauge KPIs">
@@ -82,6 +116,7 @@ export function Gauges() {
           onView={setViewGauge}
           onEdit={setEditGauge}
           onDelete={setDeleteTarget}
+          onUpload={handleUpload}
           onDownload={handleDownload}
         />
       </section>
@@ -90,6 +125,8 @@ export function Gauges() {
         gauge={viewGauge}
         open={Boolean(viewGauge)}
         onClose={() => setViewGauge(null)}
+        onPreviewDocument={setPreviewDocument}
+        onDownloadDocument={downloadDocument}
       />
 
       <GaugeFormModal
@@ -112,6 +149,13 @@ export function Gauges() {
         open={Boolean(deleteTarget)}
         onClose={() => setDeleteTarget(null)}
         onConfirm={deleteGauge}
+      />
+
+      <DocumentPreviewModal
+        open={Boolean(previewDocument)}
+        onClose={() => setPreviewDocument(null)}
+        document={previewDocument}
+        title={previewDocument?.fileName}
       />
     </div>
   )

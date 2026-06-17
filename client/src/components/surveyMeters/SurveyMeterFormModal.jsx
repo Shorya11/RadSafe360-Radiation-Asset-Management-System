@@ -38,10 +38,19 @@ export function SurveyMeterFormModal({ open, onClose, meter, onSave, title }) {
     setForm((f) => ({ ...f, [name]: value }))
   }
 
-  const handleSubmit = (e) => {
+  const [submitting, setSubmitting] = useState(false)
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    onSave(form)
-    onClose()
+    setSubmitting(true)
+    try {
+      await onSave(form)
+      onClose()
+    } catch {
+      /* error surfaced via context */
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -150,7 +159,9 @@ export function SurveyMeterFormModal({ open, onClose, meter, onSave, title }) {
           <Button type="button" variant="secondary" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit">{meter ? 'Save Changes' : 'Add Meter'}</Button>
+          <Button type="submit" disabled={submitting}>
+            {submitting ? 'Saving…' : meter ? 'Save Changes' : 'Add Meter'}
+          </Button>
         </div>
       </form>
     </Modal>

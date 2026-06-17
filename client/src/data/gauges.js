@@ -1,4 +1,4 @@
-/** @typedef {'Active' | 'Inactive' | 'Disposed'} GaugeStatus */
+/** @typedef {'Active' | 'Inactive' | 'Disposed' | 'Maintenance'} GaugeStatus */
 
 /**
  * @typedef {Object} Gauge
@@ -11,7 +11,8 @@
  * @property {string} activity
  * @property {string} purchaseDate
  * @property {string} installDate
- * @property {string} life
+ * @property {number} lifecycleYears
+ * @property {string} sourceTestDate
  * @property {string} location
  * @property {string} plant
  * @property {string} nocNumber
@@ -352,12 +353,13 @@ export const GAUGE_STATUSES = [
   'Active',
   'Inactive',
   'Disposed',
+  'Maintenance',
 ]
 
 export const GAUGE_PLANTS = [
   'SMS-II',
   'SMS-III',
-  'Blast Furnace',
-  'Plate Mill',
-  'Coke Oven',
+  'BF-I',
+  'BF-II',
+  'Coal Washery',
 ]

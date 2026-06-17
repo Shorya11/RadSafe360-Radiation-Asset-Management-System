@@ -54,26 +54,41 @@ export function ActionItemsTable({
     setDraft({ task: '', assignedTo: '', dueDate: '', status: 'Pending' })
   }
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (!editingId) return
-    onUpdate(editingId, {
-      task: draft.task,
-      assignedTo: draft.assignedTo,
-      dueDate: draft.dueDate,
-      status: draft.status,
-    })
-    cancelEdit()
+    try {
+      await onUpdate(editingId, {
+        task: draft.task,
+        assignedTo: draft.assignedTo,
+        dueDate: draft.dueDate,
+        status: draft.status,
+      })
+      cancelEdit()
+    } catch {
+      /* error surfaced via context */
+    }
   }
 
-  const handleAdd = () => {
-    const id = onAdd({
-      task: 'New task',
-      assignedTo: '',
-      dueDate: '',
-      status: 'Pending',
-    })
-    const created = sorted.find((i) => i.id === id)
-    if (created) startEdit(created)
+  const handleAdd = async () => {
+    try {
+      const id = await onAdd({
+        task: 'New task',
+        assignedTo: '',
+        dueDate: '',
+        status: 'Pending',
+      })
+      if (id) {
+        setEditingId(id)
+        setDraft({
+          task: 'New task',
+          assignedTo: '',
+          dueDate: '',
+          status: 'Pending',
+        })
+      }
+    } catch {
+      /* error surfaced via context */
+    }
   }
 
   if (!sorted.length) {
@@ -200,7 +215,7 @@ export function ActionItemsTable({
                         </Button>
                         <button
                           type="button"
-                          onClick={() => onDelete(item.id)}
+                          onClick={() => onDelete(item.id).catch(() => {})}
                           className="rounded-lg p-2 text-industrial-600 transition-colors hover:bg-red-50 hover:text-accent-red"
                           aria-label="Delete action activity"
                         >

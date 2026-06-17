@@ -13,10 +13,10 @@ export function DashboardLayout() {
     <div className="flex min-h-screen">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      <div className="flex min-w-0 flex-1 flex-col">
+    <div className="flex min-w-0 flex-1 flex-col lg:ml-[17.5rem]">
         <TopNavbar title={title} onMenuClick={() => setSidebarOpen(true)} />
 
-        <main className="industrial-grid-bg flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
+      <main className="industrial-grid-bg flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
           <Outlet />
         </main>
       </div>

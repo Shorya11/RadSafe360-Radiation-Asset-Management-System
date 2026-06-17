@@ -8,9 +8,10 @@ import { MeetingsTable } from '../components/meetings/MeetingsTable'
 import { MeetingAnalytics } from '../components/meetings/MeetingAnalytics'
 import { AddMeetingModal } from '../components/meetings/AddMeetingModal'
 import { useMeetings } from '../context/MeetingContext'
+import { ApiStatus } from '../components/ui/ApiStatus'
 
 export function Meetings() {
-  const { meetings } = useMeetings()
+  const { meetings, loading, error, fetchMeetings } = useMeetings()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [viewMode, setViewMode] = useState('cards')
@@ -43,6 +44,8 @@ export function Meetings() {
           </Button>
         }
       />
+
+      <ApiStatus loading={loading} error={error} onRetry={fetchMeetings} />
 
       <MeetingFilters
         search={search}

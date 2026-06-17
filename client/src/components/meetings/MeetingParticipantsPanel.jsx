@@ -20,12 +20,18 @@ export function MeetingParticipantsPanel({ meetingId }) {
     .filter((r) => r.participantSource === 'rso_personnel' && r.personnelId)
     .map((r) => r.personnelId)
 
-  const handleAdd = (e) => {
+  const handleAdd = async (e) => {
     e.preventDefault()
     const valid = rows.filter((r) => r.name.trim() && r.department.trim())
-    valid.forEach((row) => addParticipant(meetingId, row))
-    setRows([{ ...EMPTY_PARTICIPANT_ROW }])
-    setOpen(false)
+    try {
+      for (const row of valid) {
+        await addParticipant(meetingId, row)
+      }
+      setRows([{ ...EMPTY_PARTICIPANT_ROW }])
+      setOpen(false)
+    } catch {
+      /* error surfaced via context */
+    }
   }
 
   return (

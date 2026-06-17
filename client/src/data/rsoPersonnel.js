@@ -18,13 +18,11 @@
 export const PERSONNEL_STATUSES = ['Valid', 'Expired']
 
 export const PERSONNEL_DEPARTMENTS = [
-  'Radiation Safety',
   'SMS-II',
   'SMS-III',
-  'Coke Oven',
-  'Blast Furnace',
-  'Plate Mill',
-  'Utility',
+  'BF-I',
+  'BF-II',
+  
 ]
 
 export const RSO_PERSONNEL = [

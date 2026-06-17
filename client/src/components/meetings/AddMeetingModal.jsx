@@ -1,16 +1,24 @@
 import { useState } from 'react'
+
 import { Modal } from '../ui/Modal'
 import { Input, Textarea } from '../ui/Input'
 import { Button } from '../ui/Button'
+
 import { TopicsEditor } from './TopicsEditor'
 import { ParticipantRowsEditor } from './ParticipantRowsEditor'
-import { ActionActivitiesEditor, EMPTY_ACTION_ACTIVITY } from './ActionActivitiesEditor'
+import {
+  ActionActivitiesEditor,
+  EMPTY_ACTION_ACTIVITY,
+} from './ActionActivitiesEditor'
 import { RsoParticipantPickerModal } from './RsoParticipantPickerModal'
+
 import { useMeetings } from '../../context/MeetingContext'
-import { EMPTY_PARTICIPANT_ROW } from '../../data/attendance'
-import { personnelToParticipant } from '../../data/attendance'
 import { useRsoPersonnel } from '../../context/RsoPersonnelContext'
 
+import {
+  EMPTY_PARTICIPANT_ROW,
+  personnelToParticipant,
+} from '../../data/attendance'
 const emptyForm = {
   title: '',
   date: '',
@@ -43,7 +51,9 @@ export function AddMeetingModal({ open, onClose, onAdded }) {
     setActionActivities([{ ...EMPTY_ACTION_ACTIVITY }])
   }
 
-  const handleSubmit = (e) => {
+  const [submitting, setSubmitting] = useState(false)
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
     const validParticipants = participants.filter(
       (p) => p.name.trim() && p.department.trim(),
@@ -57,16 +67,23 @@ export function AddMeetingModal({ open, onClose, onAdded }) {
       }))
       .filter((a) => a.task && a.assignedTo)
 
-    const meeting = addMeeting({
-      ...form,
-      topics,
-      discussionPoints,
-      participants: validParticipants,
-      actionActivities: validActionActivities,
-    })
-    resetForm()
-    onAdded?.(meeting)
-    onClose()
+    setSubmitting(true)
+    try {
+      const meeting = await addMeeting({
+        ...form,
+        topics,
+        discussionPoints,
+        participants: validParticipants,
+        actionActivities: validActionActivities,
+      })
+      resetForm()
+      onAdded?.(meeting)
+      onClose()
+    } catch {
+      /* error surfaced via context */
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -139,7 +156,9 @@ export function AddMeetingModal({ open, onClose, onAdded }) {
           <Button type="button" variant="secondary" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit">Create Meeting</Button>
+          <Button type="submit" disabled={submitting}>
+            {submitting ? 'Creating…' : 'Create Meeting'}
+          </Button>
         </div>
       </form>
 

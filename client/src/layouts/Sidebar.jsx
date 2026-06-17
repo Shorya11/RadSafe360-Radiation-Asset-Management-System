@@ -1,7 +1,8 @@
 import { NavLink } from 'react-router-dom'
-import { Factory, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import clsx from 'clsx'
 import { NAV_ITEMS } from '../data/navigation'
+import logo from '../assets/logo.png'
 
 export function Sidebar({ isOpen, onClose }) {
   return (
@@ -16,31 +17,37 @@ export function Sidebar({ isOpen, onClose }) {
       />
 
       <aside
+
         className={clsx(
-          'enterprise-sidebar fixed inset-y-0 left-0 z-50 flex w-[17.5rem] flex-col transition-transform duration-300 ease-out lg:static lg:translate-x-0',
+          'enterprise-sidebar fixed left-0 top-0 z-50 flex h-screen w-[17.5rem] flex-col transition-transform duration-300 ease-out lg:fixed lg:translate-x-0',
           isOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
-        <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 px-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-amber-200 bg-amber-50 glow-amber">
-              <Factory className="h-5 w-5 text-accent-amber" strokeWidth={1.75} />
-            </div>
-            <div>
-              <p className="text-sm font-bold text-gray-900">Industria</p>
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-industrial-600">
-                Gauge Management
+
+        <div className="shrink-0 border-b border-slate-200 px-5 py-5">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <img
+                src={logo}
+                alt="Jindal Steel and Power"
+                className="h-12 w-auto max-w-full object-contain object-left"
+              />
+              <p className="mt-3 text-[11px] font-bold uppercase leading-snug tracking-wide text-gray-900">
+                JINDAL STEEL
+              </p>
+              <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-amber">
+                RADIATION SAFETY
               </p>
             </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-lg p-2 text-industrial-500 transition-colors hover:bg-slate-100 hover:text-gray-900 lg:hidden"
+              aria-label="Close sidebar"
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg p-2 text-industrial-500 transition-colors hover:bg-slate-100 hover:text-gray-900 lg:hidden"
-            aria-label="Close sidebar"
-          >
-            <X className="h-5 w-5" />
-          </button>
         </div>
 
         <nav className="flex-1 space-y-0.5 overflow-y-auto p-3">
@@ -76,18 +83,7 @@ export function Sidebar({ isOpen, onClose }) {
           ))}
         </nav>
 
-        <div className="shrink-0 border-t border-slate-200 p-4">
-          <div className="enterprise-surface rounded-xl p-3.5">
-            <p className="text-xs font-semibold text-industrial-700">System Status</p>
-            <div className="mt-2.5 flex items-center gap-2">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-40" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
-              </span>
-              <span className="text-xs font-medium text-emerald-700">All systems operational</span>
-            </div>
-          </div>
-        </div>
+
       </aside>
     </>
   )

@@ -22,9 +22,13 @@ export function DeleteRsoPersonnelModal({ personnel, open, onClose, onConfirm })
         <Button
           type="button"
           className="!border-rose-500/30 !bg-rose-500/10 !text-accent-red hover:!bg-rose-500/20"
-          onClick={() => {
-            onConfirm(personnel.employeeId)
-            onClose()
+          onClick={async () => {
+            try {
+              await onConfirm(personnel.employeeId)
+              onClose()
+            } catch {
+              /* error surfaced via context */
+            }
           }}
         >
           Delete

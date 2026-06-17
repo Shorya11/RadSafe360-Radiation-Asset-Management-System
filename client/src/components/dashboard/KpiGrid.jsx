@@ -1,10 +1,35 @@
 import { StatCard } from '../ui/StatCard'
-import { KPI_STATS } from '../../data/dashboardData'
+import { useGauges } from '../../context/GaugeContext'
+import { useSurveyMeters } from '../../context/SurveyMeterContext'
+import { useRsoPersonnel } from '../../context/RsoPersonnelContext'
+import { useMeetings } from '../../context/MeetingContext'
+import { buildDashboardKpiStats } from '../../utils/dashboardUtils'
+import { useMemo } from 'react'
 
 export function KpiGrid() {
+  const { gauges, loading: gaugesLoading } = useGauges()
+  const { surveyMeters, loading: metersLoading } = useSurveyMeters()
+  const { personnel, loading: personnelLoading } = useRsoPersonnel()
+  const { meetings, analytics, loading: meetingsLoading } = useMeetings()
+
+  const loading = gaugesLoading || metersLoading || personnelLoading || meetingsLoading
+
+  const stats = useMemo(
+    () =>
+      buildDashboardKpiStats({
+        gauges,
+        surveyMeters,
+        personnel,
+        meetings,
+        analytics,
+        loading,
+      }),
+    [gauges, surveyMeters, personnel, meetings, analytics, loading],
+  )
+
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {KPI_STATS.map((stat) => (
+    <div className="grid gap-5 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3">
+      {stats.map((stat) => (
         <StatCard
           key={stat.id}
           title={stat.title}

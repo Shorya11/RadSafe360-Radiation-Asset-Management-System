@@ -3,6 +3,10 @@ import { MeetingProvider } from './context/MeetingContext'
 import { GaugeProvider } from './context/GaugeContext'
 import { SurveyMeterProvider } from './context/SurveyMeterContext'
 import { RsoPersonnelProvider } from './context/RsoPersonnelContext'
+import { EloraProvider } from './context/EloraContext'
+import { EloraMembersProvider } from './context/EloraMembersContext'
+import { ReportsProvider } from './context/ReportsContext'
+import { TrainingManualsProvider } from './context/TrainingManualsContext'
 import { AppRoutes } from './routes/AppRoutes'
 
 function App() {
@@ -12,7 +16,15 @@ function App() {
         <RsoPersonnelProvider>
           <SurveyMeterProvider>
             <GaugeProvider>
-              <AppRoutes />
+              <EloraProvider>
+                <EloraMembersProvider>
+                  <ReportsProvider>
+                    <TrainingManualsProvider>
+                      <AppRoutes />
+                    </TrainingManualsProvider>
+                  </ReportsProvider>
+                </EloraMembersProvider>
+              </EloraProvider>
             </GaugeProvider>
           </SurveyMeterProvider>
         </RsoPersonnelProvider>
